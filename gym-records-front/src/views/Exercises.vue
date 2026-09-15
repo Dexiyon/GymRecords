@@ -10,17 +10,46 @@
           <v-btn @click="openDialog('Add')" color="green" prepend-icon="mdi-plus" variant="text">Add</v-btn>
           <v-btn class="ml-2" @click="doDelete" color="red" :disabled="!selected.length" prepend-icon="mdi-trash-can" variant="text">Delete</v-btn>
         </div>
-        <v-data-table v-model="selected" :headers="HEADERS" :items="items" item-value="id" :loading="StoreCommon.loading" show-select :sort-by="[{ key: 'name', order: 'asc' }]">
+        <v-data-table v-model="selected"
+          :headers="HEADERS" :items="items" item-value="id"
+          :loading="StoreCommon.loading" :mobile="mobile"
+          show-select :sort-by="[{ key: 'name', order: 'asc' }]">
+
+          <!-- Common -->
           <template #no-data>
             <div class="text-no-data text-grey" @click="openDialog('Add')">Start by adding an exercise</div>
           </template>
           <template #bottom></template>
+
+          <!-- PC -->
           <template #[`item.description`]="{ item }">
             <v-icon v-if="!ComUtils.isEmptyString(item.description)" @click="openDesc(item)">mdi-text-box-search-outline</v-icon>
           </template>
           <template #[`item.edit`]="{ item }">
             <v-btn @click="openDialog('Edit', item)" color="blue" prepend-icon="mdi-pencil" variant="text">Edit</v-btn>
           </template>
+
+          <!-- Mobile -->
+          <template v-if="mobile" #item="{ internalItem, isSelected, toggleSelect }">
+            <v-card>
+              <v-card-text class="d-flex">
+                <v-checkbox-btn
+                  :model-value="isSelected(internalItem)"
+                  @update:model-value="toggleSelect(internalItem)"
+                  style="max-width: max-content;"
+                ></v-checkbox-btn>
+                <div class="pl-2 d-flex">
+                  <div @click="toggleSelect(internalItem)">
+                    <div class="text-title-large">{{ internalItem.raw.name }}</div>
+                    <div>Current limit: {{ internalItem.raw.limit }} {{ internalItem.raw.measure }}</div>
+                    <div v-html="internalItem.raw.description" class="text-grey" style="white-space: pre-wrap;"></div>
+                  </div>
+                  <v-btn @click="openDialog('Edit', internalItem.raw)" color="blue" prepend-icon="mdi-pencil" style="position: absolute; right: 0;" variant="text">Edit</v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </template>
+
         </v-data-table>
       </v-card-text>
     </v-card>
@@ -46,7 +75,6 @@
           <div class="text-red" style="font-size: 0.8em;">※Only Name is required</div>
           <v-text-field v-model="inputItem.name" label="Name" ref="refName"></v-text-field>
         </div>
-        <v-textarea v-model="inputItem.description" label="Description"></v-textarea>
         <div>
           <div>Measured by</div>
           <v-radio-group v-model="inputItem.measure" inline>
@@ -55,6 +83,7 @@
           </v-radio-group>
         </div>
         <v-text-field v-model="inputItem.limit" label="Current limit" type="number"></v-text-field>
+        <v-textarea v-model="inputItem.description" label="Description"></v-textarea>
       </v-card-text>
 
       <v-card-actions>
@@ -69,6 +98,7 @@
 
 <script setup>
   import { onMounted, nextTick, ref } from 'vue';
+  import { useDisplay } from 'vuetify'
   import * as ComDbUtils from '@/common/ComDbUtils';
   import * as ComUtils from '@/common/ComUtils.js';
   import { useCommonStore } from '../store/StoreCommon';
@@ -79,6 +109,7 @@
   // Refs, Imports
   const refName = ref(null);
   const StoreCommon = useCommonStore();
+  const { mobile } = useDisplay();
 
   // Page
   const items = ref([]);
@@ -98,9 +129,9 @@
   const TABLE_NAME = 'm_gym_exercises';
   const HEADERS = [
     { key: 'name', title: 'Name' },
-    { key: 'description', title: 'Description', sortable: false },
     { key: 'limit', title: 'Current limit' },
     { key: 'measure', title: '', sortable: false },
+    { key: 'description', title: 'Description', sortable: false },
     { key: 'edit', title: '', sortable: false }
   ]
 
@@ -169,16 +200,15 @@
     action.value = p_action;
 
     dialog.value = true;
-    nextTick(() => {
-      refName.value?.focus();
-    });
+    if (p_action === 'Add') {
+      nextTick(() => refName.value?.focus());
+    }
   }
 
   const resetItem = () => {
     inputItem.value = Object.fromEntries(HEADERS.map(header => [header.key, '']));
   }
 </script>
-
 
 <style>
   .text-no-data:hover {
