@@ -1,10 +1,13 @@
 <template>
   <v-app>
     <v-app-bar>
+      <template #prepend>
+        <v-icon class="pl-2" size="x-large">mdi-weight-lifter</v-icon>
+      </template>
+      <v-app-bar-title>Gym Records</v-app-bar-title>
       <template v-if="mobile" #append>
         <v-app-bar-nav-icon @click="toggleNav = !toggleNav"></v-app-bar-nav-icon>
       </template>
-      <v-app-bar-title>Gym Records</v-app-bar-title>
     </v-app-bar>
 
     <v-navigation-drawer v-model="toggleNav" :expand-on-hover="!mobile" :location="mobile ? 'right' : 'left'" :permanent="smAndUp">
