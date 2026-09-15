@@ -1,0 +1,3 @@
+.v-btn:not:has(.v-btn-icon) {
+  min-width: 6em;
+}
