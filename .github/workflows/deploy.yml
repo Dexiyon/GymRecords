@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: 24.20.0
           cache: 'npm'
+          cache-dependency-path: ./gym-records-front/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
