@@ -21,3 +21,9 @@
   ];
 
 </script>
+
+<style>
+  .v-list-item-title {
+    white-space: normal !important;
+  }
+</style>

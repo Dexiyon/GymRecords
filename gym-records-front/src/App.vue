@@ -2,9 +2,9 @@
   <v-app>
     <v-app-bar>
       <template #prepend>
-        <v-icon class="pl-2" size="x-large">mdi-weight-lifter</v-icon>
+        <v-icon class="pl-2" @click="router.push('/')" size="x-large">mdi-weight-lifter</v-icon>
       </template>
-      <v-app-bar-title>Gym Records</v-app-bar-title>
+      <v-app-bar-title @click="router.push('/')" style="cursor: pointer;">Gym Records</v-app-bar-title>
       <template v-if="mobile" #append>
         <v-app-bar-nav-icon @click="toggleNav = !toggleNav"></v-app-bar-nav-icon>
       </template>
