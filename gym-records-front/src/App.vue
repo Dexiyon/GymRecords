@@ -4,7 +4,7 @@
       <template #prepend>
         <v-icon class="pl-2" @click="router.push('/')" size="x-large">mdi-weight-lifter</v-icon>
       </template>
-      <v-app-bar-title @click="router.push('/')" style="cursor: pointer;">Gym Records</v-app-bar-title>
+      <v-app-bar-title @click="router.push('/')" style="cursor: pointer; user-select: none;">Gym Records</v-app-bar-title>
       <template v-if="mobile" #append>
         <v-app-bar-nav-icon @click="toggleNav = !toggleNav"></v-app-bar-nav-icon>
       </template>
@@ -37,6 +37,7 @@
 
   const listNav = ref([
     { title: 'home', icon: 'mdi-home' },
+    { title: 'records', icon: 'mdi-list-status' },
     { title: 'exercises', icon: 'mdi-dumbbell' }
   ])
 

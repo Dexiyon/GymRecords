@@ -5,7 +5,7 @@
 
       <v-card-text>
         <div class="d-flex">
-          <v-btn @click="getList" color="yellow" prepend-icon="mdi-refresh" variant="text">Refesh</v-btn>
+          <v-btn @click="getList" color="yellow" prepend-icon="mdi-refresh" variant="text">Refresh</v-btn>
           <v-spacer></v-spacer>
           <v-btn @click="openDialog('Add')" color="green" prepend-icon="mdi-plus" variant="text">Add</v-btn>
           <v-btn class="ml-2" @click="doDelete" color="red" :disabled="!selected.length" prepend-icon="mdi-trash-can" variant="text">Delete</v-btn>
@@ -22,8 +22,8 @@
           <template #bottom></template>
 
           <!-- PC -->
-          <template #[`item.description`]="{ item }">
-            <v-icon v-if="!ComUtils.isEmptyString(item.description)" @click="openDesc(item)">mdi-text-box-search-outline</v-icon>
+          <template #[`item.notes`]="{ item }">
+            <div class="text-grey" style="font-size: 0.8em; white-space: pre-wrap;" v-html="item.notes" ></div>
           </template>
           <template #[`item.edit`]="{ item }">
             <v-btn @click="openDialog('Edit', item)" color="blue" prepend-icon="mdi-pencil" variant="text">Edit</v-btn>
@@ -41,8 +41,8 @@
                 <div class="pl-2 d-flex">
                   <div @click="toggleSelect(internalItem)">
                     <div class="text-title-large">{{ internalItem.raw.name }}</div>
-                    <div>Current limit: {{ internalItem.raw.limit }} {{ internalItem.raw.measure }}</div>
-                    <div v-html="internalItem.raw.description" class="text-grey" style="white-space: pre-wrap;"></div>
+                    <div>Current limit: {{ internalItem.raw.limit }} {{ internalItem.raw.category }}</div>
+                    <div v-html="internalItem.raw.notes" class="text-grey" style="white-space: pre-wrap;"></div>
                   </div>
                   <v-btn @click="openDialog('Edit', internalItem.raw)" color="blue" prepend-icon="mdi-pencil" style="position: absolute; right: 0;" variant="text">Edit</v-btn>
                 </div>
@@ -54,14 +54,6 @@
       </v-card-text>
     </v-card>
   </v-container>
-
-  <v-dialog v-model="descDialog" no-click-animation width="400">
-    <v-card>
-      <v-card-text>
-        <div v-html="descText" style="white-space: pre-wrap;"></div>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
 
   <v-dialog v-model="dialog" no-click-animation persistent width="600">
     <v-card>
@@ -76,14 +68,14 @@
           <v-text-field v-model="inputItem.name" label="Name" ref="refName"></v-text-field>
         </div>
         <div>
-          <div>Measured by</div>
-          <v-radio-group v-model="inputItem.measure" inline>
-            <v-radio label="kgs" value="kgs"></v-radio>
-            <v-radio label="mins" value="mins"></v-radio>
+          <div>Category</div>
+          <v-radio-group v-model="inputItem.category" inline>
+            <v-radio label="Weights" value="kgs"></v-radio>
+            <v-radio label="Cardio" value="mins"></v-radio>
           </v-radio-group>
         </div>
         <v-text-field v-model="inputItem.limit" label="Current limit" type="number"></v-text-field>
-        <v-textarea v-model="inputItem.description" label="Description"></v-textarea>
+        <v-textarea v-model="inputItem.notes" label="Notes"></v-textarea>
       </v-card-text>
 
       <v-card-actions>
@@ -120,9 +112,6 @@
   const dialog = ref(false);
   const inputItem = ref({});
 
-  const descDialog = ref(false);
-  const descText = ref();
-
   /**
    * CONSTANTS
    */
@@ -130,8 +119,8 @@
   const HEADERS = [
     { key: 'name', title: 'Name' },
     { key: 'limit', title: 'Current limit' },
-    { key: 'measure', title: '', sortable: false },
-    { key: 'description', title: 'Description', sortable: false },
+    { key: 'category', title: '', sortable: false },
+    { key: 'notes', title: 'Notes', sortable: false },
     { key: 'edit', title: '', sortable: false }
   ]
 
@@ -181,12 +170,6 @@
     }
 
     await getList();
-  }
-
-  const openDesc = (p_item) => {
-    console.log(p_item);
-    descText.value = p_item.description;
-    descDialog.value = true;
   }
 
   const openDialog = (p_action, p_item) => {
