@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/gym-records/', 
+  base: '/GymRecords/', 
   plugins: [
     vue(),
     vuetify({ autoImport: true })   // the plugin automatically injects the required imports, so no need to add import at the top of vue file
