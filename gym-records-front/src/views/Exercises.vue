@@ -1,15 +1,16 @@
 <template>
-  <v-container>
-    <v-card>
+  <v-container :class="{ 'pa-0' : mobile }">
+    <v-card elevation="0" rounded="15">
       <v-card-title>Exercises</v-card-title>
 
       <v-card-text>
-        <div class="d-flex">
-          <v-btn @click="getList" color="yellow" prepend-icon="mdi-refresh" variant="text">Refresh</v-btn>
+        <div class="d-flex" :class="{ 'mb-2' : mobile }">
+          <v-btn @click="getList" color="amber" icon="mdi-refresh" size="x-small" variant="tonal"></v-btn>
           <v-spacer></v-spacer>
-          <v-btn @click="openDialog('Add')" color="green" prepend-icon="mdi-plus" variant="text">Add</v-btn>
-          <v-btn class="ml-2" @click="doDelete" color="red" :disabled="!selected.length" prepend-icon="mdi-trash-can" variant="text">Delete</v-btn>
+          <v-btn @click="openDialog('Add')" color="green" icon="mdi-plus" size="x-small" variant="tonal"></v-btn>
+          <v-btn class="ml-3" @click="doDelete" color="red" :disabled="!selected.length" icon="mdi-trash-can" size="x-small" variant="tonal"></v-btn>
         </div>
+
         <v-data-table v-model="selected"
           :headers="HEADERS" :items="items" item-value="id"
           :loading="StoreCommon.loading" :mobile="mobile"
@@ -17,35 +18,39 @@
 
           <!-- Common -->
           <template #no-data>
-            <div class="text-no-data text-grey" @click="openDialog('Add')">Start by adding an exercise</div>
+            <div class="text-no-data text-grey-darken-1" @click="openDialog('Add')">Start by adding an exercise</div>
           </template>
           <template #bottom></template>
 
           <!-- PC -->
           <template #[`item.notes`]="{ item }">
-            <div class="text-grey" style="font-size: 0.8em; white-space: pre-wrap;" v-html="item.notes" ></div>
+            <div class="text-grey-darken-1" style="font-size: 0.8em; white-space: pre-wrap;" v-html="item.notes" ></div>
           </template>
           <template #[`item.edit`]="{ item }">
-            <v-btn @click="openDialog('Edit', item)" color="blue" prepend-icon="mdi-pencil" variant="text">Edit</v-btn>
+            <v-btn @click="openDialog('Edit', item)" color="blue" icon="mdi-pencil" variant="text"></v-btn>
           </template>
 
           <!-- Mobile -->
           <template v-if="mobile" #item="{ internalItem, isSelected, toggleSelect }">
-            <v-card>
-              <v-card-text class="d-flex">
-                <v-checkbox-btn
-                  :model-value="isSelected(internalItem)"
-                  @update:model-value="toggleSelect(internalItem)"
-                  style="max-width: max-content;"
-                ></v-checkbox-btn>
-                <div class="pl-2 d-flex">
-                  <div @click="toggleSelect(internalItem)">
-                    <div class="text-title-large">{{ internalItem.raw.name }}</div>
-                    <div>Current limit: {{ internalItem.raw.limit }} {{ internalItem.raw.category }}</div>
-                    <div v-html="internalItem.raw.notes" class="text-grey" style="white-space: pre-wrap;"></div>
+            <v-card class="border-b mb-1" :class="{ 'bg-orange-lighten-4' : isSelected(internalItem) }" elevation="0" rounded="15">
+              <v-card-text class="d-flex" @click="toggleSelect(internalItem)">
+                <section style="width: 15%;">
+                  <v-checkbox-btn
+                    :model-value="isSelected(internalItem)"
+                    @update:model-value="toggleSelect(internalItem)"
+                    style="max-width: max-content;"
+                  ></v-checkbox-btn>
+                </section>
+                <section style="width: 70%;">
+                  <div style="width: 100%;">
+                    <div class="d-flex justify-center text-title-large">{{ internalItem.raw.name }}</div>
+                    <div class="d-flex justify-center">Current limit: {{ internalItem.raw.limit }} {{ internalItem.raw.category }}</div>
+                    <div v-html="internalItem.raw.notes" class="d-flex justify-center text-grey-darken-1" style="white-space: pre-wrap;"></div>
                   </div>
-                  <v-btn @click="openDialog('Edit', internalItem.raw)" color="blue" prepend-icon="mdi-pencil" style="position: absolute; right: 0;" variant="text">Edit</v-btn>
-                </div>
+                </section>
+                <section style="width: 15%;" class="d-flex justify-end">
+                  <v-btn @click.stop="openDialog('Edit', internalItem.raw)" color="blue" icon="mdi-pencil" style="font-size: 1.2em;" variant="text"></v-btn>
+                </section>
               </v-card-text>
             </v-card>
           </template>
@@ -55,34 +60,32 @@
     </v-card>
   </v-container>
 
-  <v-dialog v-model="dialog" no-click-animation persistent width="600">
-    <v-card>
+  <!-- Add/Edit Dialog -->
+  <v-dialog v-model="dialog" no-click-animation persistent scrim="grey" width="600">
+    <v-card elevation="0" rounded="15">
       <v-card-title>{{ action }} exercise</v-card-title>
       <div style="position: absolute; top: 8px; right: 8px;">
-        <v-btn v-if="action === 'Edit'" @click="doDelete" color="red" prepend-icon="mdi-trash-can" variant="text">Delete</v-btn>
+        <v-btn v-if="action === 'Edit'" @click="doDelete" color="red" icon="mdi-trash-can" size="x-small" variant="tonal"></v-btn>
       </div>
 
       <v-card-text>
         <div>
-          <div class="text-red" style="font-size: 0.8em;">※Only Name is required</div>
-          <v-text-field v-model="inputItem.name" label="Name" ref="refName"></v-text-field>
+          <div class="mb-2 text-red" style="font-size: 0.8em;">※Only Name is required</div>
+          <PartsTextField label="Name" v-model="inputItem.name"></PartsTextField>
         </div>
         <div>
           <div>Category</div>
-          <v-radio-group v-model="inputItem.category" inline>
-            <v-radio label="Weights" value="kgs"></v-radio>
-            <v-radio label="Cardio" value="mins"></v-radio>
-          </v-radio-group>
+          <PartsRadioGroup :items="CATEGORIES" v-model="inputItem.category"></PartsRadioGroup>
         </div>
-        <v-text-field v-model="inputItem.limit" label="Current limit" type="number"></v-text-field>
-        <v-textarea v-model="inputItem.notes" label="Notes"></v-textarea>
+        <PartsTextField label="Current limit" type="number" v-model="inputItem.limit"></PartsTextField>
+        <PartsTextArea label="Notes" v-model="inputItem.notes"></PartsTextArea>
       </v-card-text>
 
       <v-card-actions>
-        <v-btn v-if="action === 'Add'" @click="doAction" color="green" prepend-icon="mdi-plus" variant="text">Add</v-btn>
-        <v-btn v-if="action === 'Edit'" @click="doAction" color="blue" prepend-icon="mdi-pencil" variant="text">{{ action }}</v-btn>
+        <v-btn @click="dialog = false" color="red" variant="tonal" width="6em">Cancel</v-btn>
         <v-spacer></v-spacer>
-        <v-btn @click="dialog = false" variant="text">Cancel</v-btn>
+        <v-btn v-if="action === 'Add'" @click="doAction" color="green" prepend-icon="mdi-plus" variant="tonal" width="6em">Add</v-btn>
+        <v-btn v-if="action === 'Edit'" @click="doAction" color="blue" prepend-icon="mdi-pencil" variant="tonal" width="6em">{{ action }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -93,7 +96,11 @@
   import { useDisplay } from 'vuetify'
   import * as ComDbUtils from '@/common/ComDbUtils';
   import * as ComUtils from '@/common/ComUtils.js';
-  import { useCommonStore } from '../store/StoreCommon';
+  import { useCommonStore } from '@/store/StoreCommon';
+
+  import PartsRadioGroup from '@/components/PartsRadioGroup.vue';
+  import PartsTextArea from '@/components/PartsTextArea.vue';
+  import PartsTextField from '@/components/PartsTextField.vue';
 
   /**
    * VARIABLES
@@ -115,24 +122,34 @@
   /**
    * CONSTANTS
    */
-  const TABLE_NAME = 'm_gym_exercises';
+  const CATEGORIES = [
+    { label: 'Weights', value: 'kgs' },
+    { label: 'Cardio', value: 'mins' }
+  ]
   const HEADERS = [
     { key: 'name', title: 'Name' },
     { key: 'limit', title: 'Current limit' },
     { key: 'category', title: '', sortable: false },
     { key: 'notes', title: 'Notes', sortable: false },
-    { key: 'edit', title: '', sortable: false }
-  ]
+    { key: 'edit', title: '', sortable: false, align: 'end' }
+  ];
+  const TABLE_NAME = 'm_gym_exercises';
 
   /**
    * EVENTS
    */
   onMounted(async () => {
-    await getList();
+    if (StoreCommon.exercises.length === 0) {
+      await getList();
+    }
+    else {
+      items.value = StoreCommon.exercises;
+    }
   });
 
   const getList = async () => {
     items.value = await ComDbUtils.selectTable(TABLE_NAME, 'data->>name desc');
+    StoreCommon.exercises = items.value;
   }
 
   const doAction = async () => {
@@ -157,6 +174,9 @@
   }
 
   const doDelete = async () => {
+    const proceed = confirm('Are you sure you want to delete selected?');
+    if (!proceed) return;
+
     let arr_id = [];
 
     if (dialog.value) {
@@ -183,9 +203,9 @@
     action.value = p_action;
 
     dialog.value = true;
-    if (p_action === 'Add') {
-      nextTick(() => refName.value?.focus());
-    }
+    // if (p_action === 'Add') {
+    //   nextTick(() => refName.value?.focus());
+    // }
   }
 
   const resetItem = () => {

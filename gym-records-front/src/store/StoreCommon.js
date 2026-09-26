@@ -4,8 +4,21 @@ export const useCommonStore = defineStore('StoreCommon', {
 
   state: () => ({
 
-    loading: false
+    /**
+     * Common
+     */
+    loading: false,
 
-  })
+    /**
+     * Pages
+     */
+    exercises: [],
+    records: []
+
+  }),
+  
+  persist: {
+    storage: sessionStorage
+  }
 
 });
