@@ -5,10 +5,10 @@
 
       <v-card-text class="px-0">
         <div class="bg-orange-lighten-5 d-flex pa-1" :class="{ 'mb-2' : mobile }">
-          <v-btn @click="getList" color="amber" icon="mdi-refresh" size="x-small" variant="tonal"></v-btn>
+          <v-btn @click="getList" color="amber" icon="mdi-refresh" size="x-small" variant="flat"></v-btn>
           <v-spacer></v-spacer>
-          <v-btn @click="openDialog('Add')" color="green" icon="mdi-plus" size="x-small" variant="tonal"></v-btn>
-          <v-btn class="ml-3" @click="doDelete" color="red" :disabled="!selected.length" icon="mdi-trash-can" size="x-small" variant="tonal"></v-btn>
+          <v-btn @click="openDialog('Add')" color="green" icon="mdi-plus" size="x-small" variant="flat"></v-btn>
+          <v-btn class="ml-3" @click="doDelete" :color="!selected.length ? 'grey' : 'red'" :disabled="!selected.length" icon="mdi-trash-can" size="x-small" variant="flat"></v-btn>
         </div>
 
         <v-data-table v-model="selected"
@@ -23,8 +23,15 @@
           <template #bottom></template>
 
           <!-- PC -->
+          <template #[`item.category`]="{ item }">
+            <div class="d-flex align-center">
+              <v-chip class="mr-2" :color="item.category === 'weights' ? 'red' : 'blue'" variant="flat">{{ item.category }}</v-chip>
+              <div v-if="item.category === 'weights' && item.sets?.length > 0">{{ getSetsSummary(item) }}</div>
+              <div v-if="item.category === 'cardio' && item.minutes > 0">{{ item.minutes }} mins</div>
+            </div>
+          </template>
           <template #[`item.notes`]="{ item }">
-            <div class="text-grey-darken-1" style="font-size: 0.8em; white-space: pre-wrap;" v-html="item.notes" ></div>
+            <div class="text-grey-darken-1" style="white-space: pre-wrap;" v-html="item.notes" ></div>
           </template>
           <template #[`item.edit`]="{ item }">
             <v-btn @click="openDialog('Edit', item)" color="blue" icon="mdi-pencil" variant="text"></v-btn>
@@ -33,7 +40,7 @@
           <!-- Mobile -->
           <template v-if="mobile" #item="{ internalItem, isSelected, toggleSelect }">
             <v-card class="border-b mb-1" :class="{ 'bg-orange-lighten-4' : isSelected(internalItem) }" elevation="0" rounded="15">
-              <v-card-text class="d-flex" @click="toggleSelect(internalItem)">
+              <v-card-text class="d-flex align-center" @click="toggleSelect(internalItem)">
                 <section style="width: 15%;">
                   <v-checkbox-btn
                     :model-value="isSelected(internalItem)"
@@ -43,9 +50,15 @@
                 </section>
                 <section style="width: 70%;">
                   <div style="width: 100%;">
-                    <div class="d-flex justify-center text-title-large">{{ internalItem.raw.name }}</div>
-                    <div class="d-flex justify-center">Current limit: {{ internalItem.raw.limit }} {{ internalItem.raw.category }}</div>
-                    <div v-html="internalItem.raw.notes" class="d-flex justify-center text-grey-darken-1" style="white-space: pre-wrap;"></div>
+                    <div class="align-center d-flex">
+                      <v-chip class="mr-2" :color="internalItem.raw.category === 'weights' ? 'red' : 'blue'" variant="flat">{{ internalItem.raw.category }}</v-chip>
+                      <div class="d-flex text-title-large">{{ internalItem.raw.name }}</div>
+                    </div>
+                    <div v-if="internalItem.raw.category === 'weights' && internalItem.raw.sets?.length > 0"
+                      class="d-flex text-grey-darken-1">{{ getSetsSummary(internalItem.raw) }}</div>
+                    <div v-if="internalItem.raw.category === 'cardio' && internalItem.raw.minutes > 0"
+                      class="d-flex text-grey-darken-1">{{ internalItem.raw.minutes }} mins</div>
+                    <div v-html="internalItem.raw.notes" class="d-flex text-grey-darken-1" style="white-space: pre-wrap;"></div>
                   </div>
                 </section>
                 <section style="width: 15%;" class="d-flex justify-end">
@@ -62,10 +75,10 @@
 
   <!-- Add/Edit Dialog -->
   <v-dialog v-model="dialog" :fullscreen="mobile" no-click-animation scrollable persistent scrim="grey" width="600">
-    <v-card rounded="15">
+    <v-card :rounded="!mobile && 15" >
       <v-card-title class="bg-orange-lighten-2">{{ action }} exercise</v-card-title>
       <div style="position: absolute; top: 8px; right: 8px;">
-        <v-btn v-if="action === 'Edit'" @click="doDelete" color="red" icon="mdi-trash-can" size="x-small" variant="tonal"></v-btn>
+        <v-btn v-if="action === 'Edit'" @click="doDelete" color="red" icon="mdi-trash-can" size="x-small" variant="flat"></v-btn>
       </div>
 
       <v-card-text>
@@ -78,7 +91,7 @@
           <div>Category</div>
           <PartsRadioGroup button color="orange-accent-1" :items="CATEGORIES" v-model="inputItem.category"></PartsRadioGroup>
         </div>
-        <v-data-table class="mb-4 table-sets" v-if="inputItem.category === 'kgs'"
+        <v-data-table class="mb-4 table-sets" v-if="inputItem.category === 'weights'"
           :headers="HEADERS_WEIGHTS" :items="inputItem.sets">
           <template #headers v-if="!inputItem.sets?.length"></template>
           <template #no-data></template>
@@ -92,22 +105,27 @@
             <PartsCounter color="orange-accent-3" unit="set" v-model="item.sets"></PartsCounter>
           </template>
           <template #[`item.delete`]="{ item }">
-            <v-icon color="red">mdi-trash-can</v-icon>
+            <v-icon @click="deleteSet(item)" color="red">mdi-trash-can</v-icon>
           </template>
           <template #bottom>
             <v-btn class="mt-2" @click="addSet" color="green" prepend-icon="mdi-plus" variant="flat" width="100%">Add set</v-btn>
           </template>
         </v-data-table>
+        <template v-if="inputItem.category === 'cardio'">
+          <PartsTextField @click="setMinutes" centered label="Minutes" readonly type="number" v-model="inputItem.minutes"></PartsTextField>
+          <template>
+            <PartsCounter :increment="5" unit="mins" ref="refMinutes" v-model="inputItem.minutes"></PartsCounter>
+          </template>
+        </template>
 
-        <PartsTextField label="Current limit" type="number" v-model="inputItem.limit"></PartsTextField>
         <PartsTextArea label="Notes" v-model="inputItem.notes"></PartsTextArea>
       </v-card-text>
 
       <v-card-actions>
-        <v-btn @click="dialog = false" color="red" variant="tonal" width="6em">Cancel</v-btn>
+        <v-btn @click="dialog = false" color="red" variant="flat" width="6em">Cancel</v-btn>
         <v-spacer></v-spacer>
-        <v-btn v-if="action === 'Add'" @click="doAction" color="green" prepend-icon="mdi-plus" variant="tonal" width="6em">Add</v-btn>
-        <v-btn v-if="action === 'Edit'" @click="doAction" color="blue" prepend-icon="mdi-pencil" variant="tonal" width="6em">{{ action }}</v-btn>
+        <v-btn v-if="action === 'Add'" @click="doAction" color="green" :disabled="ComUtils.isEmptyString(inputItem.name)" prepend-icon="mdi-plus" variant="flat" width="6em">Add</v-btn>
+        <v-btn v-if="action === 'Edit'" @click="doAction" color="blue" :disabled="ComUtils.isEmptyString(inputItem.name)" prepend-icon="mdi-pencil" variant="flat" width="6em">Edit</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -118,7 +136,7 @@
   import { useDisplay } from 'vuetify'
   import * as ComDbUtils from '@/common/ComDbUtils';
   import * as ComUtils from '@/common/ComUtils.js';
-  import { useCommonStore } from '@/store/StoreCommon';
+  import { useCommonStore } from '@/store/StoreCommon.js';
 
   import PartsCounter from '@/components/PartsCounter.vue';
   import PartsRadioGroup from '@/components/PartsRadioGroup.vue';
@@ -129,7 +147,7 @@
    * VARIABLES
    */
   // Refs, Imports
-  const refName = ref(null);
+  const refMinutes = ref(null);
   const StoreCommon = useCommonStore();
   const { mobile } = useDisplay();
 
@@ -146,13 +164,12 @@
    * CONSTANTS
    */
   const CATEGORIES = [
-    { label: 'Weights', value: 'kgs' },
-    { label: 'Cardio', value: 'mins' }
+    { label: 'Weights', value: 'weights' },
+    { label: 'Cardio', value: 'cardio' }
   ]
   const HEADERS = [
     { key: 'name', title: 'Name' },
-    { key: 'limit', title: 'Current limit' },
-    { key: 'category', title: '', sortable: false },
+    { key: 'category', title: 'Category', sortable: false },
     { key: 'notes', title: 'Notes', sortable: false },
     { key: 'edit', title: '', sortable: false, align: 'end' }
   ];
@@ -182,6 +199,17 @@
     StoreCommon.exercises = items.value;
   }
 
+  const getSetsSummary = (item) => {
+    let summary = '';
+    item.sets.forEach((set, index) => {
+      summary += `${ set.sets } sets of ${ set.weight } kgs`;
+      if (index + 1 < item.sets.length) {
+        summary += ', ';
+      }
+    });
+    return summary;
+  }
+
   const doAction = async () => {
     if (ComUtils.isEmptyString(inputItem.value.name)) {
       alert('Name cannot be empty');
@@ -190,6 +218,13 @@
     if (action.value === 'Add' && items.value.some(item => item.name.localeCompare(inputItem.value.name, undefined, { sensitivity: 'base' }) === 0)) {
       alert(inputItem.value.name + ' is already in the list');
       return;
+    }
+
+    if (inputItem.value.category === 'weights') {
+      inputItem.value.minutes = 0;
+    }
+    if (inputItem.value.category === 'cardio') {
+      inputItem.value.sets = [];
     }
 
     if (action.value === 'Add') {
@@ -241,6 +276,7 @@
   const resetItem = () => {
     inputItem.value = Object.fromEntries(HEADERS.map(header => [header.key, '']));
     inputItem.value.sets = [];
+    inputItem.value.minutes = 30;
   }
 
   // Weights
@@ -252,7 +288,21 @@
     else {
       maxId = Math.max(...inputItem.value.sets.map(item => item.id)) + 1;
     }
-    inputItem.value.sets.push({ id: maxId, weight: 0, reps: 0, sets: 0 });
+    inputItem.value.sets.push({ id: maxId, weight: 10, reps: 12, sets: 3 });
+  }
+  
+  const deleteSet = (item) => {
+    const newSets = inputItem.value.sets.filter(set => set.id !== item.id);
+    if (newSets.length > 0) {
+      let id = 1;
+      newSets.forEach(set => set.id = id++);
+    }
+    inputItem.value.sets = newSets;
+  }
+
+  // Cardio
+  const setMinutes = () => {
+    refMinutes.value.openDialog();
   }
 </script>
 

@@ -20,6 +20,7 @@
 
     { type: 'subheader', title: 'MIGHT' },
     { value: 7, title: '🔴 Add floating operation buttons (add, delete, etc)' },
+    { value: 8, title: '🔴 Make categories, exercises into chips' },
   ];
 
 </script>
