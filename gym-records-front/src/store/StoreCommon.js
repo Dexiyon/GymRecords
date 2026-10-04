@@ -16,6 +16,10 @@ export const useCommonStore = defineStore('StoreCommon', {
     records: []
 
   }),
+
+  actions: {
+
+  },
   
   persist: {
     storage: sessionStorage

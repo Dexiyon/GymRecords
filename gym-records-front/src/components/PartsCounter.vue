@@ -3,8 +3,8 @@
   <v-dialog v-model="dialog" width="250">
     <v-card>
       <v-card-text class="">
-        <v-btn @click="model += props.increment" color="green" prepend-icon="mdi-plus" variant="flat" width="100%">{{ props.increment }} {{ props.unit }}</v-btn>
-        <div class="d-flex justify-center py-4 text-display-small">{{ model }}</div>
+        <v-btn @click="model = Number(model) + props.increment" color="green" prepend-icon="mdi-plus" variant="flat" width="100%">{{ props.increment }} {{ props.unit }}</v-btn>
+        <PartsTextField class="pt-6 pb-2" centered type="number" v-model="model"></PartsTextField>
         <v-btn @click="subtract" :color="isDisabled ? 'grey' : 'red'" :disabled="isDisabled" prepend-icon="mdi-minus" variant="flat" width="100%">{{ props.increment }} {{ props.unit }}</v-btn>
       </v-card-text>
     </v-card>
@@ -14,6 +14,7 @@
 
 <script setup>
   import { computed, ref } from 'vue';
+  import PartsTextField from '@/components/PartsTextField.vue';
 
   const model = defineModel();
   const props = defineProps({
@@ -49,3 +50,9 @@
     openDialog
   });
 </script>
+
+<style scoped>
+  :deep(input) {
+    font-size: 2.5em;
+  }
+</style>

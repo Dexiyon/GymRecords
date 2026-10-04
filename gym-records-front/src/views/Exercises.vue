@@ -40,30 +40,27 @@
           <!-- Mobile -->
           <template v-if="mobile" #item="{ internalItem, isSelected, toggleSelect }">
             <v-card class="border-b mb-1" :class="{ 'bg-orange-lighten-4' : isSelected(internalItem) }" elevation="0" rounded="15">
-              <v-card-text class="d-flex align-center" @click="toggleSelect(internalItem)">
-                <section style="width: 15%;">
-                  <v-checkbox-btn
-                    :model-value="isSelected(internalItem)"
-                    @update:model-value="toggleSelect(internalItem)"
-                    style="max-width: max-content;"
-                  ></v-checkbox-btn>
-                </section>
-                <section style="width: 70%;">
-                  <div style="width: 100%;">
-                    <div class="align-center d-flex">
+              <v-card-text class="d-flex align-center">
+                <v-checkbox-btn
+                  class="mr-4"
+                  :model-value="isSelected(internalItem)"
+                  @update:model-value="toggleSelect(internalItem)"
+                  style="max-width: max-content;"
+                ></v-checkbox-btn>
+                <div class="d-flex align-center w-100" @click="openDialog('Edit', internalItem.raw)">
+                  <div>
+                    <div class="d-flex">
                       <v-chip class="mr-2" :color="internalItem.raw.category === 'weights' ? 'red' : 'blue'" variant="flat">{{ internalItem.raw.category }}</v-chip>
-                      <div class="d-flex text-title-large">{{ internalItem.raw.name }}</div>
+                      <span class="text-title-large">{{ internalItem.raw.name }}</span>
                     </div>
                     <div v-if="internalItem.raw.category === 'weights' && internalItem.raw.sets?.length > 0"
-                      class="d-flex text-grey-darken-1">{{ getSetsSummary(internalItem.raw) }}</div>
+                      class="text-grey-darken-1">{{ getSetsSummary(internalItem.raw) }}</div>
                     <div v-if="internalItem.raw.category === 'cardio' && internalItem.raw.minutes > 0"
-                      class="d-flex text-grey-darken-1">{{ internalItem.raw.minutes }} mins</div>
+                      class="text-grey-darken-1">{{ internalItem.raw.minutes }} mins</div>
                     <div v-html="internalItem.raw.notes" class="d-flex text-grey-darken-1" style="white-space: pre-wrap;"></div>
                   </div>
-                </section>
-                <section style="width: 15%;" class="d-flex justify-end">
-                  <v-btn @click.stop="openDialog('Edit', internalItem.raw)" color="blue" icon="mdi-pencil" style="font-size: 1.2em;" variant="text"></v-btn>
-                </section>
+                  <v-icon color="blue" size="x-large" style="position: absolute; right: 20px;">mdi-pencil</v-icon>
+                </div>
               </v-card-text>
             </v-card>
           </template>
@@ -91,32 +88,8 @@
           <div>Category</div>
           <PartsRadioGroup button color="orange-accent-1" :items="CATEGORIES" v-model="inputItem.category"></PartsRadioGroup>
         </div>
-        <v-data-table class="mb-4 table-sets" v-if="inputItem.category === 'weights'"
-          :headers="HEADERS_WEIGHTS" :items="inputItem.sets">
-          <template #headers v-if="!inputItem.sets?.length"></template>
-          <template #no-data></template>
-          <template #[`item.weight`]="{ item }">
-            <PartsCounter color="orange-accent-3" :increment="5" unit="kgs" v-model="item.weight"></PartsCounter>
-          </template>
-          <template #[`item.reps`]="{ item }">
-            <PartsCounter color="orange-accent-3" unit="rep" v-model="item.reps"></PartsCounter>
-          </template>
-          <template #[`item.sets`]="{ item }">
-            <PartsCounter color="orange-accent-3" unit="set" v-model="item.sets"></PartsCounter>
-          </template>
-          <template #[`item.delete`]="{ item }">
-            <v-icon @click="deleteSet(item)" color="red">mdi-trash-can</v-icon>
-          </template>
-          <template #bottom>
-            <v-btn class="mt-2" @click="addSet" color="green" prepend-icon="mdi-plus" variant="flat" width="100%">Add set</v-btn>
-          </template>
-        </v-data-table>
-        <template v-if="inputItem.category === 'cardio'">
-          <PartsTextField @click="setMinutes" centered label="Minutes" readonly type="number" v-model="inputItem.minutes"></PartsTextField>
-          <template>
-            <PartsCounter :increment="5" unit="mins" ref="refMinutes" v-model="inputItem.minutes"></PartsCounter>
-          </template>
-        </template>
+        <PartsWeightsSets v-if="inputItem.category === 'weights'" class="mb-4" color="orange-accent-3" v-model="inputItem.sets"></PartsWeightsSets>
+        <PartsCardioMinutes v-if="inputItem.category === 'cardio'" v-model="inputItem.minutes"></PartsCardioMinutes>
 
         <PartsTextArea label="Notes" v-model="inputItem.notes"></PartsTextArea>
       </v-card-text>
@@ -134,20 +107,21 @@
 <script setup>
   import { onMounted, nextTick, ref } from 'vue';
   import { useDisplay } from 'vuetify'
+  import { useCommonStore } from '@/store/StoreCommon.js';
   import * as ComDbUtils from '@/common/ComDbUtils';
   import * as ComUtils from '@/common/ComUtils.js';
-  import { useCommonStore } from '@/store/StoreCommon.js';
 
+  import PartsCardioMinutes from '@/components/PartsCardioMinutes.vue';
   import PartsCounter from '@/components/PartsCounter.vue';
   import PartsRadioGroup from '@/components/PartsRadioGroup.vue';
   import PartsTextArea from '@/components/PartsTextArea.vue';
   import PartsTextField from '@/components/PartsTextField.vue';
+  import PartsWeightsSets from '@/components/PartsWeightsSets.vue';
 
   /**
    * VARIABLES
    */
   // Refs, Imports
-  const refMinutes = ref(null);
   const StoreCommon = useCommonStore();
   const { mobile } = useDisplay();
 
@@ -173,13 +147,6 @@
     { key: 'notes', title: 'Notes', sortable: false },
     { key: 'edit', title: '', sortable: false, align: 'end' }
   ];
-  const HEADERS_WEIGHTS = [
-    { key: 'id', title: '', sortable: false },
-    { key: 'weight', title: 'kgs', sortable: false },
-    { key: 'reps', title: 'reps', sortable: false },
-    { key: 'sets', title: 'sets', sortable: false },
-    { key: 'delete', title: '', sortable: false }
-  ]
   const TABLE_NAME = 'm_gym_exercises';
 
   /**
@@ -193,22 +160,6 @@
       items.value = StoreCommon.exercises;
     }
   });
-
-  const getList = async () => {
-    items.value = await ComDbUtils.selectTable(TABLE_NAME, 'data->>name desc');
-    StoreCommon.exercises = items.value;
-  }
-
-  const getSetsSummary = (item) => {
-    let summary = '';
-    item.sets.forEach((set, index) => {
-      summary += `${ set.sets } sets of ${ set.weight } kgs`;
-      if (index + 1 < item.sets.length) {
-        summary += ', ';
-      }
-    });
-    return summary;
-  }
 
   const doAction = async () => {
     if (ComUtils.isEmptyString(inputItem.value.name)) {
@@ -234,7 +185,7 @@
       await ComDbUtils.updateTable(TABLE_NAME, inputItem.value.id, { data: inputItem.value });
     }
 
-    getList();
+    await getList();
     dialog.value = false;
   }
 
@@ -255,6 +206,22 @@
     }
 
     await getList();
+  }
+
+  const getList = async () => {
+    items.value = await ComDbUtils.selectTable(TABLE_NAME, 'data->>name desc');
+    StoreCommon.exercises = items.value;
+  }
+
+  const getSetsSummary = (item) => {
+    let summary = '';
+    item.sets.forEach((set, index) => {
+      summary += `${ set.sets } sets of ${ set.weight } kgs`;
+      if (index + 1 < item.sets.length) {
+        summary += ', ';
+      }
+    });
+    return summary;
   }
 
   const openDialog = (p_action, p_item) => {
@@ -278,35 +245,9 @@
     inputItem.value.sets = [];
     inputItem.value.minutes = 30;
   }
-
-  // Weights
-  const addSet = () => {
-    let maxId = 1;
-    if (ComUtils.isEmptyArray(inputItem.value.sets)) {
-      inputItem.value.sets = [];
-    }
-    else {
-      maxId = Math.max(...inputItem.value.sets.map(item => item.id)) + 1;
-    }
-    inputItem.value.sets.push({ id: maxId, weight: 10, reps: 12, sets: 3 });
-  }
-  
-  const deleteSet = (item) => {
-    const newSets = inputItem.value.sets.filter(set => set.id !== item.id);
-    if (newSets.length > 0) {
-      let id = 1;
-      newSets.forEach(set => set.id = id++);
-    }
-    inputItem.value.sets = newSets;
-  }
-
-  // Cardio
-  const setMinutes = () => {
-    refMinutes.value.openDialog();
-  }
 </script>
 
-<style>
+<style scoped>
   .table-sets tr.v-data-table-rows-no-data {
     display: none;
   }
