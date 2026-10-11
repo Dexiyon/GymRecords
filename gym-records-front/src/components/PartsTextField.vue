@@ -12,8 +12,6 @@
 </template>
 
 <script setup>
-import { readonly } from 'vue';
-
   const model = defineModel();
   const props = defineProps({
     centered: { type: Boolean, default: false },
@@ -25,6 +23,7 @@ import { readonly } from 'vue';
 
 <style scoped>
   .align-input-center :deep(input) {
+    justify-content: center;
     text-align: center !important;
   }
 </style>

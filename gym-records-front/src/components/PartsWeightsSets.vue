@@ -14,7 +14,7 @@
       <v-icon @click="doDelete(item)" color="red">mdi-trash-can</v-icon>
     </template>
     <template #bottom>
-      <v-btn class="mt-2" @click="doAdd" color="green" prepend-icon="mdi-plus" variant="flat" width="100%">Add set</v-btn>
+      <v-btn class="mt-2" @click="doAdd" color="green" prepend-icon="mdi-plus" variant="outlined" width="100%">Add set</v-btn>
     </template>
   </v-data-table>
 </template>

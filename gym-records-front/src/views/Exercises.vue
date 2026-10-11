@@ -1,6 +1,6 @@
 <template>
-  <v-container :class="{ 'pa-0' : mobile }">
-    <v-card elevation="0" :rounded="!mobile && 15">
+  <v-container :class="{ 'pa-0' : mobile }" style="min-width: 100%;">
+    <v-card elevation="0" :rounded="!mobile && 15" width="100%">
       <v-card-title class="bg-orange-lighten-2">Exercises</v-card-title>
 
       <v-card-text class="px-0">
@@ -23,38 +23,38 @@
           <template #bottom></template>
 
           <!-- PC -->
+          <template #[`item.name`]="{ item }">
+            <div class="d-flex align-center">
+              <div>{{ item.name }}</div>
+              <v-spacer></v-spacer>
+              <v-btn @click="openDialog('Edit', item)" color="blue" icon="mdi-pencil" variant="text"></v-btn>
+            </div>
+          </template>
           <template #[`item.category`]="{ item }">
             <div class="d-flex align-center">
-              <v-chip class="mr-2" :color="item.category === 'weights' ? 'red' : 'blue'" variant="flat">{{ item.category }}</v-chip>
-              <div v-if="item.category === 'weights' && item.sets?.length > 0">{{ getSetsSummary(item) }}</div>
+              <v-chip class="mr-2" :color="item.category === 'weights' ? 'red' : 'blue'" density="compact" variant="flat">{{ item.category }}</v-chip>
+              <div v-if="item.category === 'weights' && item.sets?.length > 0">{{ ComGymUtils.getSetsSummary(item.sets) }}</div>
               <div v-if="item.category === 'cardio' && item.minutes > 0">{{ item.minutes }} mins</div>
             </div>
           </template>
           <template #[`item.notes`]="{ item }">
             <div class="text-grey-darken-1" style="white-space: pre-wrap;" v-html="item.notes" ></div>
           </template>
-          <template #[`item.edit`]="{ item }">
-            <v-btn @click="openDialog('Edit', item)" color="blue" icon="mdi-pencil" variant="text"></v-btn>
-          </template>
 
           <!-- Mobile -->
           <template v-if="mobile" #item="{ internalItem, isSelected, toggleSelect }">
-            <v-card class="border-b mb-1" :class="{ 'bg-orange-lighten-4' : isSelected(internalItem) }" elevation="0" rounded="15">
+            <v-card class="border-b mb-1 mobile-card" :class="{ 'bg-orange-lighten-4' : isSelected(internalItem) }" elevation="0" rounded="15">
               <v-card-text class="d-flex align-center">
-                <v-checkbox-btn
-                  class="mr-4"
-                  :model-value="isSelected(internalItem)"
-                  @update:model-value="toggleSelect(internalItem)"
-                  style="max-width: max-content;"
+                <v-checkbox-btn class="mr-4" :model-value="isSelected(internalItem)" @update:model-value="toggleSelect(internalItem)" style="max-width: max-content;"
                 ></v-checkbox-btn>
                 <div class="d-flex align-center w-100" @click="openDialog('Edit', internalItem.raw)">
                   <div>
                     <div class="d-flex">
-                      <v-chip class="mr-2" :color="internalItem.raw.category === 'weights' ? 'red' : 'blue'" variant="flat">{{ internalItem.raw.category }}</v-chip>
+                      <v-chip class="mr-2" :color="internalItem.raw.category === 'weights' ? 'red' : 'blue'" density="compact" variant="flat">{{ internalItem.raw.category }}</v-chip>
                       <span class="text-title-large">{{ internalItem.raw.name }}</span>
                     </div>
                     <div v-if="internalItem.raw.category === 'weights' && internalItem.raw.sets?.length > 0"
-                      class="text-grey-darken-1">{{ getSetsSummary(internalItem.raw) }}</div>
+                      class="text-grey-darken-1">{{ ComGymUtils.getSetsSummary(internalItem.raw.sets) }}</div>
                     <div v-if="internalItem.raw.category === 'cardio' && internalItem.raw.minutes > 0"
                       class="text-grey-darken-1">{{ internalItem.raw.minutes }} mins</div>
                     <div v-html="internalItem.raw.notes" class="d-flex text-grey-darken-1" style="white-space: pre-wrap;"></div>
@@ -109,6 +109,7 @@
   import { useDisplay } from 'vuetify'
   import { useCommonStore } from '@/store/StoreCommon.js';
   import * as ComDbUtils from '@/common/ComDbUtils';
+  import * as ComGymUtils from '@/common/ComGymUtils.js';
   import * as ComUtils from '@/common/ComUtils.js';
 
   import PartsCardioMinutes from '@/components/PartsCardioMinutes.vue';
@@ -145,7 +146,6 @@
     { key: 'name', title: 'Name' },
     { key: 'category', title: 'Category', sortable: false },
     { key: 'notes', title: 'Notes', sortable: false },
-    { key: 'edit', title: '', sortable: false, align: 'end' }
   ];
   const TABLE_NAME = 'm_gym_exercises';
 
@@ -194,7 +194,6 @@
     if (!proceed) return;
 
     let arr_id = [];
-
     if (dialog.value) {
       arr_id.push(inputItem.value.id);
       await ComDbUtils.deleteTable(TABLE_NAME, arr_id);
@@ -211,17 +210,6 @@
   const getList = async () => {
     items.value = await ComDbUtils.selectTable(TABLE_NAME, 'data->>name desc');
     StoreCommon.exercises = items.value;
-  }
-
-  const getSetsSummary = (item) => {
-    let summary = '';
-    item.sets.forEach((set, index) => {
-      summary += `${ set.sets } sets of ${ set.weight } kgs`;
-      if (index + 1 < item.sets.length) {
-        summary += ', ';
-      }
-    });
-    return summary;
   }
 
   const openDialog = (p_action, p_item) => {

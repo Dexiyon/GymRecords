@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import { components } from "vuetify/dist/vuetify.js";
+import { useCommonStore } from "./store/StoreCommon";
 
 const routes = [
   {

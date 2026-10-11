@@ -12,11 +12,7 @@ import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
 
 import { createVuetify } from 'vuetify';
-import { VProgress } from 'vuetify/labs/VProgress';
 const vuetify = createVuetify({
-  components: {
-    // VProgress
-  },
   theme: {
     defaultTheme: 'system'
   }

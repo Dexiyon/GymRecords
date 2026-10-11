@@ -1,9 +1,9 @@
 import { supabase } from '@/lib/supabaseClient.js';
 import * as ComUtils from '@/common/ComUtils.js';
 import { useCommonStore } from "@/store/StoreCommon";
-const StoreCommon = useCommonStore()
 
 const deleteTable = async (p_table, p_id) => {
+  const StoreCommon = useCommonStore()
   StoreCommon.loading = true;
 
   let arr_id = [];
@@ -24,6 +24,7 @@ const deleteTable = async (p_table, p_id) => {
 }
 
 const insertTable = async (p_table, p_data) => {
+  const StoreCommon = useCommonStore()
   StoreCommon.loading = true;
 
   const { error } = await supabase.from(p_table).insert(p_data);
@@ -43,6 +44,7 @@ const insertTable = async (p_table, p_data) => {
  * @returns 
  */
 const selectTable = async (p_table, p_order) => {
+  const StoreCommon = useCommonStore()
   StoreCommon.loading = true;
 
   let query = supabase.from(p_table).select();
