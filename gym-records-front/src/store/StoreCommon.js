@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { useTheme } from "vuetify";
 
 export const useCommonStore = defineStore('StoreCommon', {
 
@@ -9,8 +8,10 @@ export const useCommonStore = defineStore('StoreCommon', {
      * Login
      */
     loginid: '',
-    loginname: '',
-    theme: 'light',
+    userdata: {
+      name: 'guest',
+      theme: 'system'
+    },
 
     /**
      * Common
@@ -29,9 +30,7 @@ export const useCommonStore = defineStore('StoreCommon', {
   actions: {
     setUser (p_loginid) {
       this.loginid = p_loginid;
-      const userData = this.users.filter(user => user.id === p_loginid)[0];
-      this.loginname = userData.name;
-      this.theme = userData.theme;
+      this.userdata = this.users.filter(user => user.id === p_loginid)[0];
     }
   },
   

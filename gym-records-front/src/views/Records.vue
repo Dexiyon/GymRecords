@@ -14,7 +14,7 @@
         <v-data-table v-model="selected"
           :headers="HEADERS" :items="items"
           :loading="StoreCommon.loading" :mobile="mobile"
-          show-select :sort-by="[{ key: 'date', order: 'asc' }]"
+          show-select :sort-by="[{ key: 'date', order: 'desc' }]"
         >
           <!-- Common -->
           <template #no-data>
@@ -175,16 +175,11 @@
    */
   onMounted(async () => {
     // Update records list
-    if (StoreCommon.records.length === 0) {
-      await getList();
-    }
-    else {
-      items.value = StoreCommon.records;
-    }
+    await getList();
 
     // Update exercises list (for Exercises pull down)
     if (StoreCommon.exercises.length === 0) {
-      StoreCommon.exercises = await ComDbUtils.selectTable('m_gym_exercises');
+      StoreCommon.exercises = await ComDbUtils.selectTableByLogin('m_gym_exercises', StoreCommon);
     }
     exercises.value = JSON.parse(JSON.stringify(StoreCommon.exercises));
   });
@@ -207,7 +202,7 @@
     });
 
     if (action.value === 'Add') {
-      await ComDbUtils.insertTable(TABLE_NAME, { data: inputItem.value });
+      await ComDbUtils.insertTableByLogin(TABLE_NAME, { data: inputItem.value }, StoreCommon);
     }
     else if (action.value === 'Edit') {
       await ComDbUtils.updateTable(TABLE_NAME, inputItem.value.id, { data: inputItem.value });
@@ -236,7 +231,7 @@
   }
 
   const getList = async () => {
-    items.value = await ComDbUtils.selectTable(TABLE_NAME);
+    items.value = await ComDbUtils.selectTableByLogin(TABLE_NAME, StoreCommon);
     StoreCommon.records = items.value;
   }
 

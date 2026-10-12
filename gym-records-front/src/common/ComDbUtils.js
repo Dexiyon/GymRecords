@@ -37,24 +37,28 @@ const insertTable = async (p_table, p_data) => {
   StoreCommon.loading = false;
 }
 
+const insertTableByLogin = async (p_table, p_data, p_store) => {
+  p_data['user_id'] = p_store.loginid;
+  await insertTable(p_table, p_data);
+}
+
 /**
- * 
- * @param {*} p_table 
- * @param {*} p_order 'columnname asc/desc' ex: 'data->>name asc'
+ * Select from table
+ * @param {String} p_table tablename
+ * @param {Array} p_cond ex: [{columnname: 'user_id', value: 'yon'}]
  * @returns 
  */
-const selectTable = async (p_table, p_order) => {
+const selectTable = async (p_table, p_cond) => {
   const StoreCommon = useCommonStore()
   StoreCommon.loading = true;
 
   let query = supabase.from(p_table).select();
 
-  // if (!ComUtils.isEmptyString(p_order)) {
-  //   const columnname = p_order.split(' ')[0];
-  //   const order = p_order.split(' ')[1] === 'desc' ? { descending: true } : { ascending: true };
-  //   alert(columnname + ' ' + JSON.stringify(order))
-  //   query = query.order(columnname, order);
-  // }
+  if (!ComUtils.isEmptyArray(p_cond)) {
+    for (const cond of p_cond) {
+      query = query.eq(cond.columnname, cond.value);
+    }
+  }
 
   let tabledata = [];
   const { data, error: fetchError } = await query;
@@ -73,7 +77,12 @@ const selectTable = async (p_table, p_order) => {
   return tabledata;
 }
 
+const selectTableByLogin = async (p_table, p_store) => {
+  return await selectTable(p_table, [{ columnname: 'user_id', value: p_store.loginid }]);
+}
+
 const updateTable = async (p_table, p_id, p_data) => {
+  const StoreCommon = useCommonStore()
   StoreCommon.loading = true;
 
   const { error } = await supabase.from(p_table).update(p_data).eq('id', p_id);
@@ -87,5 +96,5 @@ const updateTable = async (p_table, p_id, p_data) => {
 }
 
 export {
-  deleteTable, insertTable, selectTable, updateTable
+  deleteTable, insertTable, insertTableByLogin, selectTable, selectTableByLogin, updateTable
 }

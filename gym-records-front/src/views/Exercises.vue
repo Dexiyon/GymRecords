@@ -18,7 +18,7 @@
 
           <!-- Common -->
           <template #no-data>
-            <div class="text-no-data text-grey-darken-1" @click="openDialog('Add')">Start by adding an exercise</div>
+            <div class="text-no-data text-grey-darken-1" @click="openDialog('Add')">Add exercise</div>
           </template>
           <template #bottom></template>
 
@@ -153,12 +153,7 @@
    * EVENTS
    */
   onMounted(async () => {
-    if (StoreCommon.exercises.length === 0) {
-      await getList();
-    }
-    else {
-      items.value = StoreCommon.exercises;
-    }
+    await getList();
   });
 
   const doAction = async () => {
@@ -179,7 +174,7 @@
     }
 
     if (action.value === 'Add') {
-      await ComDbUtils.insertTable(TABLE_NAME, { data: inputItem.value });
+      await ComDbUtils.insertTableByLogin(TABLE_NAME, { data: inputItem.value }, StoreCommon);
     }
     else if (action.value === 'Edit') {
       await ComDbUtils.updateTable(TABLE_NAME, inputItem.value.id, { data: inputItem.value });
@@ -208,7 +203,7 @@
   }
 
   const getList = async () => {
-    items.value = await ComDbUtils.selectTable(TABLE_NAME, 'data->>name desc');
+    items.value = await ComDbUtils.selectTableByLogin(TABLE_NAME, StoreCommon);
     StoreCommon.exercises = items.value;
   }
 

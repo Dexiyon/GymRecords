@@ -19,7 +19,7 @@
     </v-app-bar>
 
     <v-navigation-drawer v-model="toggleNav" :expand-on-hover="!mobile" :location="mobile ? 'right' : 'left'" :permanent="smAndUp">
-      <v-list-item class="py-3" @click="setUser" prepend-icon="mdi-account">{{ StoreCommon.loginname }}</v-list-item>
+      <v-list-item class="py-3" @click="setUser" prepend-icon="mdi-account">{{ StoreCommon.userdata.name }}</v-list-item>
       <v-divider></v-divider>
       <v-list-item v-for="item in NAVLIST" :key="item.title"
         @click="router.push({ name: item.title })"
@@ -34,17 +34,17 @@
   </v-app>
 
   <v-dialog v-model="dialog" no-click-animation :persistent="ComUtils.isEmptyString(StoreCommon.loginid)" scrim="grey" width="200">
-    <v-card :rounded="!mobile && 15">
+    <v-card elevation="0" :rounded="!mobile && 15">
       <v-card-title class="bg-orange-lighten-2">Select user</v-card-title>
       <v-card-text>
-        <PartsTextSelect :items="StoreCommon.users.map(user => { return { title: user.name, value: user.id } })" v-model="loginid"></PartsTextSelect>
+        <PartsTextSelect :items="StoreCommon.users.map(user => { return { title: user.name, value: user.id } }).sort((a, b) => a.title.localeCompare(b.title))" v-model="loginid"></PartsTextSelect>
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-  import { nextTick, onMounted, ref, watch } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { useDisplay, useTheme } from 'vuetify';
   import { useCommonStore } from './store/StoreCommon';
@@ -69,6 +69,9 @@
   const dialog = ref(false);
   const loginid = ref();
 
+  const isDarkTheme = computed(() => StoreCommon.userdata.theme === 'dark');
+  let timeoutId;
+
   /**
    * CONSTANTS
    */
@@ -77,6 +80,7 @@
     { title: 'records', icon: 'mdi-list-status' },
     { title: 'exercises', icon: 'mdi-dumbbell' }
   ]);
+  const TABLE_NAME = 'm_common_users';
 
   /**
    * EVENTS
@@ -86,30 +90,46 @@
 
     // Get users
     if (StoreCommon.users.length === 0) {
-      StoreCommon.users = await ComDbUtils.selectTable('m_common_users'); 
+      StoreCommon.users = await ComDbUtils.selectTable(TABLE_NAME); 
     }
 
     // Set user
     if (ComUtils.isEmptyString(StoreCommon.loginid)) {
       dialog.value = true;
     }
-
-    theme.change(StoreCommon.theme);
-    toggleTheme.value = StoreCommon.theme === 'dark';
+    setTheme();
   });
 
+  const setTheme = () => {
+    const oldToggleTheme = toggleTheme.value;
+    toggleTheme.value = isDarkTheme.value;
+    if (oldToggleTheme === toggleTheme.value) {
+      theme.change(isDarkTheme.value ? 'dark' : 'light');
+    }
+  }
+
   const setUser = () => {
-    console.log('set user');
     loginid.value = StoreCommon.loginid;
     dialog.value = true;
   }
 
-  watch(loginid, () => {
-    StoreCommon.setUser(loginid.value);
-    theme.change(StoreCommon.theme);
-    toggleTheme.value = StoreCommon.theme === 'dark';
+  watch(loginid, (newvalue) => {
+    StoreCommon.setUser(newvalue);
+    setTheme();
+    router.push('/');
     dialog.value = false;
   });
-  watch(toggleTheme, () => theme.change(toggleTheme.value ? 'dark' : 'light'));
+
+  watch(toggleTheme, (newvalue) => {
+    const newTheme = newvalue ? 'dark' : 'light';
+    theme.change(newTheme);
+    StoreCommon.userdata.theme = newTheme;
+    
+    // Delay update of theme to DB
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
+      await ComDbUtils.updateTable(TABLE_NAME, StoreCommon.loginid, { data: StoreCommon.userdata });
+    }, 5000);
+  });
 </script>
 

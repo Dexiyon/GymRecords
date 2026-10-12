@@ -1,6 +1,13 @@
 <template>
-  <v-container>
-    <v-card>
+  <v-container :class="{ 'pa-0' : mobile }" style="min-width: 100%;">
+    <v-card elevation="0" :rounded="!mobile && 15" width="100%">
+      <v-card-title>Today is {{ ComUtils.formatDate(new Date(), 'fullDateWithWeekday') }}</v-card-title>
+      <v-card-text>
+        
+      </v-card-text>
+    </v-card>
+    <v-card v-if="StoreCommon.loginid === 'yon'"
+      class="mt-4" elevation="0" :rounded="!mobile && 15" width="100%">
       <v-card-title>To Do List</v-card-title>
       <v-card-text>
         <v-list :items="TODO_LIST"></v-list>
@@ -10,6 +17,19 @@
 </template>
 
 <script setup>
+  import * as ComUtils from '@/common/ComUtils.js';
+  import { useDisplay } from 'vuetify';
+  import { useCommonStore } from '@/store/StoreCommon';
+
+  /**
+   * IMPORTS
+   */
+  const StoreCommon = useCommonStore();
+  const { mobile } = useDisplay();
+
+  /**
+   * CONSTANTS
+   */
   const TODO_LIST = [
     { type: 'subheader', title: 'MUST' },
     { value: 'must1', title: '▶️ Records menu (List, calendar view)' },
@@ -21,7 +41,6 @@
     { type: 'subheader', title: 'MIGHT' },
     { value: 'might1', title: '🔴 Add floating operation buttons (add, delete, etc)' },
   ];
-
 </script>
 
 <style>
