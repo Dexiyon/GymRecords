@@ -86,7 +86,7 @@
 
         <div>
           <div>Category</div>
-          <PartsRadioGroup button color="orange-accent-1" :items="CATEGORIES" v-model="inputItem.category"></PartsRadioGroup>
+          <PartsRadioGroup button color="orange-accent-1" :inline="!mobile" :items="ComGymUtils.getCategories()" v-model="inputItem.category"></PartsRadioGroup>
         </div>
         <PartsWeightsSets v-if="inputItem.category === 'weights'" class="mb-4" color="orange-accent-3" v-model="inputItem.sets"></PartsWeightsSets>
         <PartsCardioMinutes v-if="inputItem.category === 'cardio'" v-model="inputItem.minutes"></PartsCardioMinutes>

@@ -5,10 +5,10 @@
   <v-app>
     <v-app-bar class="text-white" color="orange">
       <template #prepend>
-        <v-icon class="pl-2" @click="router.push('/')" size="x-large">mdi-weight-lifter</v-icon>
+        <v-icon class="pl-2" @click="router.push({ name: 'home' })" size="x-large">mdi-weight-lifter</v-icon>
       </template>
       <v-app-bar-title>
-        <div @click="router.push('/')" style="cursor: pointer; user-select: none; max-width: max-content;">Gym Records</div>
+        <div @click="router.push({ name: 'home' })" style="cursor: pointer; user-select: none; max-width: max-content;">Gym Records</div>
       </v-app-bar-title>
       <template #append>
         <v-switch class="pr-2" false-icon="mdi-white-balance-sunny" hide-details inset true-icon="mdi-moon-waning-crescent" v-model="toggleTheme"></v-switch>
@@ -19,13 +19,15 @@
     </v-app-bar>
 
     <v-navigation-drawer v-model="toggleNav" :expand-on-hover="!mobile" :location="mobile ? 'right' : 'left'" :permanent="smAndUp">
-      <v-list-item class="py-3" @click="setUser" prepend-icon="mdi-account">{{ StoreCommon.userdata.name }}</v-list-item>
+      <v-list-item class="py-3" @click="setUser" prepend-icon="mdi-account" title>{{ StoreCommon.userdata.name }}</v-list-item>
       <v-divider></v-divider>
       <v-list-item v-for="item in NAVLIST" :key="item.title"
-        @click="router.push({ name: item.title })"
+        active-class="bg-orange-lighten-5"
         class="py-3"
         :prepend-icon="item.icon"
-        :title="ComUtils.capitalize(item.title)"></v-list-item>
+        :title="ComUtils.capitalize(item.title)"
+        :to="item.title"
+        :value="item.title"></v-list-item>
     </v-navigation-drawer>
 
     <v-main>
@@ -116,7 +118,7 @@
   watch(loginid, (newvalue) => {
     StoreCommon.setUser(newvalue);
     setTheme();
-    router.push('/');
+    router.push({ name: 'home' });
     dialog.value = false;
   });
 

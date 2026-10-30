@@ -5,13 +5,14 @@ export const useCommonStore = defineStore('StoreCommon', {
   state: () => ({
 
     /**
-     * Login
+     * Login/Users
      */
     loginid: '',
     userdata: {
       name: 'guest',
       theme: 'system'
     },
+    users: [],
 
     /**
      * Common
@@ -19,11 +20,15 @@ export const useCommonStore = defineStore('StoreCommon', {
     loading: false,
 
     /**
-     * Pages
+     * Exercises
      */
     exercises: [],
-    records: [],
-    users: [],
+
+    /**
+     * Records
+     */
+    addRecord: false,
+    records: []
 
   }),
 

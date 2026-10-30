@@ -32,14 +32,7 @@
           </template>
           <template #[`item.exercises`]="{ item }">
             <div v-if="item.exercises.length > 0" class="my-4">
-              <div v-for="exercise in item.exercises" :key="exercise.name"
-                class="align-center d-flex my-1">
-                <v-chip v-if="!ComUtils.isEmptyString(exercise.category)"
-                  class="mr-2" :color="exercise.category === 'weights' ? 'red' : 'blue'" density="compact" variant="flat">{{ exercise.category }}</v-chip>
-                <span class="mr-2">{{ exercise.name }}</span>
-                <span v-if="exercise.category === 'weights'" class="text-grey-darken-1">{{ ComGymUtils.getSetsSummary(exercise.sets)  }}</span>
-                <span v-if="exercise.category === 'cardio'" class="text-grey-darken-1">{{ exercise.minutes }} mins</span>
-              </div>
+              <PartsRecordsSummary :exercises="item.exercises"></PartsRecordsSummary>
             </div>
             <div v-else class="text-grey-darken-1">None</div>
           </template>
@@ -57,15 +50,7 @@
                       <v-icon color="blue" size="x-large" style="position: absolute; right: 20px;">mdi-pencil</v-icon>
                     </div>
                     <div v-if="internalItem.raw.exercises.length > 0">
-                      <div v-for="exercise in internalItem.raw.exercises" :key="exercise.name" class="my-1">
-                        <div class="d-flex">
-                          <v-chip v-if="!ComUtils.isEmptyString(exercise.category)"
-                            class="mr-2" :color="exercise.category === 'weights' ? 'red' : 'blue'" density="compact" variant="flat">{{ exercise.category }}</v-chip>
-                          <span class="mr-2">{{ exercise.name }}</span>
-                        </div>
-                        <div v-if="exercise.category === 'weights'" class="text-grey-darken-1">{{ ComGymUtils.getSetsSummary(exercise.sets)  }}</div>
-                        <div v-if="exercise.category === 'cardio'" class="text-grey-darken-1">{{ exercise.minutes }} mins</div>
-                      </div>
+                      <PartsRecordsSummary :exercises="internalItem.raw.exercises"></PartsRecordsSummary>
                     </div>
                     <div v-else class="text-grey-darken-1">None</div>
                   </div>
@@ -138,6 +123,7 @@
   import * as ComUtils from '@/common/ComUtils.js';
 
   import PartsCardioMinutes from '@/components/PartsCardioMinutes.vue';
+  import PartsRecordsSummary from '@/components/PartsRecordsSummary.vue';
   import PartsTextArea from '@/components/PartsTextArea.vue';
   import PartsTextDate from '@/components/PartsTextDate.vue';
   import PartsTextSelect from '@/components/PartsTextSelect.vue';
@@ -182,6 +168,12 @@
       StoreCommon.exercises = await ComDbUtils.selectTableByLogin('m_gym_exercises', StoreCommon);
     }
     exercises.value = JSON.parse(JSON.stringify(StoreCommon.exercises));
+
+    // Home ⇒ Add Record
+    if (StoreCommon.addRecord) {
+      StoreCommon.addRecord = false;
+      openDialog('Add');
+    }
   });
 
   const doAction = async () => {

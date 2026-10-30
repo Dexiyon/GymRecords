@@ -1,11 +1,28 @@
 <template>
   <v-container :class="{ 'pa-0' : mobile }" style="min-width: 100%;">
     <v-card elevation="0" :rounded="!mobile && 15" width="100%">
-      <v-card-title>Today is {{ ComUtils.formatDate(new Date(), 'fullDateWithWeekday') }}</v-card-title>
+      <v-card-title :class="{ 'd-flex justify-center' : mobile }">Today is {{ ComUtils.formatDate(new Date(), 'fullDateWithWeekday') }}</v-card-title>
       <v-card-text>
-        
+        <div :class="{ 'd-flex justify-center' : mobile }">
+          <v-btn @click="addRecord" color="green" size="x-large" variant="flat">Add Record Today</v-btn>
+        </div>
+
+        <!-- Last Record -->
+        <div class="mt-4">
+          <div class="text-title-large" :class="{ 'd-flex justify-center' : mobile }">Last Record</div>
+          <v-card v-if="!ComUtils.isEmptyObject(lastRecord)"
+            color="bg-orange-lighten-5" elevation="0" rounded="15" :width="mobile ? '' : '600'">
+            <v-card-title class="bg-orange-lighten-2">{{ ComUtils.formatDate(lastRecord.date, 'fullDateWithWeekday') }}</v-card-title>
+            <v-card-text>
+              <div class="mt-4">
+                <PartsRecordsSummary :exercises="lastRecord.exercises"></PartsRecordsSummary>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
       </v-card-text>
     </v-card>
+
     <v-card v-if="StoreCommon.loginid === 'yon'"
       class="mt-4" elevation="0" :rounded="!mobile && 15" width="100%">
       <v-card-title>To Do List</v-card-title>
@@ -17,13 +34,19 @@
 </template>
 
 <script setup>
-  import * as ComUtils from '@/common/ComUtils.js';
-  import { useDisplay } from 'vuetify';
+  import { onMounted, ref } from 'vue';
   import { useCommonStore } from '@/store/StoreCommon';
+  import { useDisplay } from 'vuetify';
+  import { useRouter } from 'vue-router';
+  import * as ComDbUtils from '@/common/ComDbUtils.js';
+  import * as ComUtils from '@/common/ComUtils.js';
+
+  import PartsRecordsSummary from '@/components/PartsRecordsSummary.vue';
 
   /**
    * IMPORTS
    */
+  const router = useRouter();
   const StoreCommon = useCommonStore();
   const { mobile } = useDisplay();
 
@@ -34,13 +57,40 @@
     { type: 'subheader', title: 'MUST' },
     { value: 'must1', title: '▶️ Records menu (List, calendar view)' },
     { value: 'must2', title: '🔴 Fix records edit (separate origin data for display and select exercises)' },
-    { value: 'must3', title: '🔴 Home screen (summary for the month, add record for the day)' },
-    { value: 'must4', title: '🔴 Add users' },
+    { value: 'must3', title: '🔴 Home screen (summary for the month, add record for the day, last record)' },
+    { value: 'must4', title: '▶️ Add users' },
     { value: 'must5', title: '🔴 Login screen' },
+    { value: 'must6', title: '▶️ Add body weight category' },
 
     { type: 'subheader', title: 'MIGHT' },
     { value: 'might1', title: '🔴 Add floating operation buttons (add, delete, etc)' },
   ];
+
+  /**
+   * VARIABLES
+   */
+  const lastRecord = ref({});
+
+  /**
+   * EVENTS
+   */
+  onMounted(async () => {
+    await getLastRecord();
+  });
+
+  const addRecord = () => {
+    StoreCommon.addRecord = true;
+    router.push({ name: 'records' });
+  }
+
+  const getLastRecord = async () => {
+    let records = StoreCommon.records;
+    if (ComUtils.isEmptyArray(records)) {
+      StoreCommon.records = await ComDbUtils.selectTableByLogin('t_gym_records', StoreCommon);
+      records = StoreCommon.records;
+    }
+    lastRecord.value = records.sort((a, b) => b.date.localeCompare(a.date))[0];
+  }
 </script>
 
 <style>
