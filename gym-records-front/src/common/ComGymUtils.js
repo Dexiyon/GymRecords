@@ -6,13 +6,24 @@ const CATEGORIES = {
   weights: { title: 'Weights', value: 'weights', color: 'red' }
 }
 
-const getSetsSummary = (p_sets) => {
+/**
+ * Body/Weights
+ */
+const getSetsSummary = (p_sets, p_isbody) => {
   if (ComUtils.isEmptyArray(p_sets)) {
     return '';
   }
   return p_sets
-    .map(set => `${ set.sets } set${ set.sets > 1 ? 's' : '' } of ${ set.weight } kgs`)
+    .map(set => `${ set.sets } set${ set.sets > 1 ? 's' : '' }${ p_isbody ? '' : ` of ${ set.weight } kgs` }`)
     .join(', ');
+}
+
+const getSetsSummaryBody = (p_sets) => {
+  return getSetsSummary(p_sets, true);
+}
+
+const getSetsSummaryWeights = (p_sets) => {
+  return getSetsSummary(p_sets, false);
 }
 
 /**
@@ -43,6 +54,6 @@ const isCategoryWeights = (p_category) => {
 }
 
 export {
-  getSetsSummary,
+  getSetsSummaryBody, getSetsSummaryWeights,
   getCategories, getCategoryColor, isCategoryBody, isCategoryCardio, isCategoryWeights
 }

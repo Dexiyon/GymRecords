@@ -6,10 +6,12 @@
       <v-chip v-if="!ComUtils.isEmptyString(exercise.category)"
         class="mr-2" :color="ComGymUtils.getCategoryColor(exercise.category)" density="compact" variant="flat">{{ exercise.category }}</v-chip>
         <span class="mr-2">{{ exercise.name }}</span>
-        <span v-if="ComGymUtils.isCategoryWeights(exercise.category)"
-          class="text-grey-darken-1">{{ ComGymUtils.getSetsSummary(exercise.sets) }}</span>
+        <span v-if="ComGymUtils.isCategoryBody(exercise.category)"
+          class="text-grey-darken-1">{{ ComGymUtils.getSetsSummaryBody(exercise.sets) }}</span>
         <span v-if="ComGymUtils.isCategoryCardio(exercise.category)"
           class="text-grey-darken-1">{{ exercise.minutes }} mins</span>
+        <span v-if="ComGymUtils.isCategoryWeights(exercise.category)"
+          class="text-grey-darken-1">{{ ComGymUtils.getSetsSummaryWeights(exercise.sets) }}</span>
     </div>
   </template>
   
@@ -22,10 +24,12 @@
           class="mr-2" :color="ComGymUtils.getCategoryColor(exercise.category)" density="compact" variant="flat">{{ exercise.category }}</v-chip>
         <span class="mr-2">{{ exercise.name }}</span>
       </div>
-      <div v-if="ComGymUtils.isCategoryWeights(exercise.category)"
-        class="text-grey-darken-1">{{ ComGymUtils.getSetsSummary(exercise.sets) }}</div>
+      <div v-if="ComGymUtils.isCategoryBody(exercise.category)"
+        class="text-grey-darken-1">{{ ComGymUtils.getSetsSummaryBody(exercise.sets) }}</div>
       <div v-if="ComGymUtils.isCategoryCardio(exercise.category)"
         class="text-grey-darken-1">{{ exercise.minutes }} mins</div>
+      <div v-if="ComGymUtils.isCategoryWeights(exercise.category)"
+        class="text-grey-darken-1">{{ ComGymUtils.getSetsSummaryWeights(exercise.sets) }}</div>
     </div>
   </template>
 </template>
