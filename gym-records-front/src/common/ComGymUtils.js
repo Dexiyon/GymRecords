@@ -3,7 +3,7 @@ import * as ComUtils from '@/common/ComUtils.js';
 const CATEGORIES = {
   body: { title: 'Body Weights', value: 'body', color: 'green' },
   cardio: { title: 'Cardio', value: 'cardio', color: 'blue' },
-  weights: { title: 'Free Weights', value: 'weights', color: 'red' }
+  weights: { title: 'Weights', value: 'weights', color: 'red' }
 }
 
 const getSetsSummary = (p_sets) => {

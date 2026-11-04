@@ -88,8 +88,11 @@
             </div>
             <template v-if="!ComUtils.isEmptyString(exercise.name)">
               <template v-for="selExercise in exercises.filter(e => e.name === exercise.name)" :key="selExercise.name">
-                <PartsWeightsSets v-if="selExercise.category === 'weights'" class="mb-4" color="orange-accent-3" v-model="selExercise.sets"></PartsWeightsSets>
-                <PartsCardioMinutes v-if="selExercise.category === 'cardio'" v-model="selExercise.minutes"></PartsCardioMinutes>
+                <PartsWeightsSets v-if="ComGymUtils.isCategoryBody(selExercise.category)"
+                  class="mb-4" color="orange-accent-3" v-model="selExercise.sets"></PartsWeightsSets>
+                <PartsCardioMinutes v-if="ComGymUtils.isCategoryCardio(selExercise.category)" v-model="selExercise.minutes"></PartsCardioMinutes>
+                <PartsWeightsSets v-if="ComGymUtils.isCategoryWeights(selExercise.category)"
+                  class="mb-4" color="orange-accent-3" v-model="selExercise.sets"></PartsWeightsSets>
               </template>
             </template>
           </v-card>

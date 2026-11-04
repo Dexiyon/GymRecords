@@ -7,15 +7,14 @@
           <v-btn @click="addRecord" color="green" size="x-large" variant="flat">Add Record Today</v-btn>
         </div>
 
-        <!-- Last Record -->
         <div class="mt-4">
-          <div class="text-title-large" :class="{ 'd-flex justify-center' : mobile }">Last Record</div>
-          <v-card v-if="!ComUtils.isEmptyObject(lastRecord)"
+          <div class="text-title-large" :class="{ 'd-flex justify-center' : mobile }">Latest Record</div>
+          <v-card v-if="!ComUtils.isEmptyObject(latestRecord)"
             color="bg-orange-lighten-5" elevation="0" rounded="15" :width="mobile ? '' : '600'">
-            <v-card-title class="bg-orange-lighten-2">{{ ComUtils.formatDate(lastRecord.date, 'fullDateWithWeekday') }}</v-card-title>
+            <v-card-title class="bg-orange-lighten-2">{{ ComUtils.formatDate(latestRecord.date, 'fullDateWithWeekday') }}</v-card-title>
             <v-card-text>
               <div class="mt-4">
-                <PartsRecordsSummary :exercises="lastRecord.exercises"></PartsRecordsSummary>
+                <PartsRecordsSummary :exercises="latestRecord.exercises"></PartsRecordsSummary>
               </div>
             </v-card-text>
           </v-card>
@@ -69,13 +68,13 @@
   /**
    * VARIABLES
    */
-  const lastRecord = ref({});
+  const latestRecord = ref({});
 
   /**
    * EVENTS
    */
   onMounted(async () => {
-    await getLastRecord();
+    await getLatestRecord();
   });
 
   const addRecord = () => {
@@ -83,13 +82,13 @@
     router.push({ name: 'records' });
   }
 
-  const getLastRecord = async () => {
+  const getLatestRecord = async () => {
     let records = StoreCommon.records;
     if (ComUtils.isEmptyArray(records)) {
       StoreCommon.records = await ComDbUtils.selectTableByLogin('t_gym_records', StoreCommon);
       records = StoreCommon.records;
     }
-    lastRecord.value = records.sort((a, b) => b.date.localeCompare(a.date))[0];
+    latestRecord.value = records.sort((a, b) => b.date.localeCompare(a.date))[0];
   }
 </script>
 

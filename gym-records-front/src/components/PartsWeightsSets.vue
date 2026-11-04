@@ -1,5 +1,5 @@
 <template>
-  <v-data-table :headers="HEADERS" :items="model">
+  <v-data-table class="mt-n4" :headers="HEADERS.filter(header => header.key !== 'weight' || (header.key === 'weight' && !props.isBody))" :items="model">
     <template #headers v-if="!model.length"></template>
     <template #[`item.weight`]="{ item }">
       <PartsCounter :color="props.color" :increment="5" unit="kgs" v-model="item.weight"></PartsCounter>
@@ -26,6 +26,7 @@
   const model = defineModel();
   const props = defineProps({
     color: { type: String, default: 'light-blue-accent-3' },
+    isBody: { type: Boolean, default: false },
     items: { type: Array, default: [] }
   });
 

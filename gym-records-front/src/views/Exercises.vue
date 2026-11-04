@@ -32,9 +32,9 @@
           </template>
           <template #[`item.category`]="{ item }">
             <div class="d-flex align-center">
-              <v-chip class="mr-2" :color="item.category === 'weights' ? 'red' : 'blue'" density="compact" variant="flat">{{ item.category }}</v-chip>
-              <div v-if="item.category === 'weights' && item.sets?.length > 0">{{ ComGymUtils.getSetsSummary(item.sets) }}</div>
-              <div v-if="item.category === 'cardio' && item.minutes > 0">{{ item.minutes }} mins</div>
+              <v-chip class="mr-2" :color="ComGymUtils.getCategoryColor(item.category)" density="compact" variant="flat">{{ item.category }}</v-chip>
+              <div v-if="ComGymUtils.isCategoryCardio(item.category) && item.minutes > 0">{{ item.minutes }} mins</div>
+              <div v-if="ComGymUtils.isCategoryWeights(item.category) && item.sets?.length > 0">{{ ComGymUtils.getSetsSummary(item.sets) }}</div>
             </div>
           </template>
           <template #[`item.notes`]="{ item }">
@@ -88,8 +88,11 @@
           <div>Category</div>
           <PartsRadioGroup button color="orange-accent-1" :inline="!mobile" :items="ComGymUtils.getCategories()" v-model="inputItem.category"></PartsRadioGroup>
         </div>
-        <PartsWeightsSets v-if="inputItem.category === 'weights'" class="mb-4" color="orange-accent-3" v-model="inputItem.sets"></PartsWeightsSets>
-        <PartsCardioMinutes v-if="inputItem.category === 'cardio'" v-model="inputItem.minutes"></PartsCardioMinutes>
+        <PartsWeightsSets v-if="ComGymUtils.isCategoryBody(inputItem.category)"
+          class="mb-4" color="orange-accent-3" is-body v-model="inputItem.sets"></PartsWeightsSets>
+        <PartsCardioMinutes v-if="ComGymUtils.isCategoryCardio(inputItem.category)" v-model="inputItem.minutes"></PartsCardioMinutes>
+        <PartsWeightsSets v-if="ComGymUtils.isCategoryWeights(inputItem.category)"
+          class="mb-4" color="orange-accent-3" v-model="inputItem.sets"></PartsWeightsSets>
 
         <PartsTextArea label="Notes" v-model="inputItem.notes"></PartsTextArea>
       </v-card-text>
@@ -113,7 +116,6 @@
   import * as ComUtils from '@/common/ComUtils.js';
 
   import PartsCardioMinutes from '@/components/PartsCardioMinutes.vue';
-  import PartsCounter from '@/components/PartsCounter.vue';
   import PartsRadioGroup from '@/components/PartsRadioGroup.vue';
   import PartsTextArea from '@/components/PartsTextArea.vue';
   import PartsTextField from '@/components/PartsTextField.vue';
