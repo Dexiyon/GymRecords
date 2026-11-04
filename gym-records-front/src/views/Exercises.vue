@@ -33,8 +33,8 @@
           <template #[`item.category`]="{ item }">
             <div class="d-flex align-center">
               <v-chip class="mr-2" :color="ComGymUtils.getCategoryColor(item.category)" density="compact" variant="flat">{{ item.category }}</v-chip>
-              <div v-if="ComGymUtils.isCategoryCardio(item.category) && item.minutes > 0">{{ item.minutes }} mins</div>
-              <div v-if="ComGymUtils.isCategoryWeights(item.category) && item.sets?.length > 0">{{ ComGymUtils.getSetsSummary(item.sets) }}</div>
+              <div v-if="ComGymUtils.isCategoryBody(item.category) && item.sets?.length > 0">{{ ComGymUtils.getSetsSummaryBody(item.sets) }}</div><div v-if="ComGymUtils.isCategoryCardio(item.category) && item.minutes > 0">{{ item.minutes }} mins</div>
+              <div v-if="ComGymUtils.isCategoryWeights(item.category) && item.sets?.length > 0">{{ ComGymUtils.getSetsSummaryWeights(item.sets) }}</div>
             </div>
           </template>
           <template #[`item.notes`]="{ item }">
@@ -53,10 +53,11 @@
                       <v-chip class="mr-2" :color="internalItem.raw.category === 'weights' ? 'red' : 'blue'" density="compact" variant="flat">{{ internalItem.raw.category }}</v-chip>
                       <span class="text-title-large">{{ internalItem.raw.name }}</span>
                     </div>
-                    <div v-if="internalItem.raw.category === 'weights' && internalItem.raw.sets?.length > 0"
-                      class="text-grey-darken-1">{{ ComGymUtils.getSetsSummary(internalItem.raw.sets) }}</div>
-                    <div v-if="internalItem.raw.category === 'cardio' && internalItem.raw.minutes > 0"
-                      class="text-grey-darken-1">{{ internalItem.raw.minutes }} mins</div>
+                    <div class="text-grey-darknen-1">
+                      <template v-if="ComGymUtils.isCategoryBody(internalItem.raw.category) && !ComUtils.isEmptyArray(internalItem.raw.sets)">{{ ComGymUtils.getSetsSummaryBody(internalItem.raw.sets) }}</template>
+                      <template v-if="ComGymUtils.isCategoryCardio(internalItem.raw.category) && internalItem.raw.minutes > 0">{{ internalItem.raw.minutes }} mins</template>
+                      <template v-if="ComGymUtils.isCategoryWeights(internalItem.raw.category) && !ComUtils.isEmptyArray(internalItem.raw.sets)">{{ ComGymUtils.getSetsSummaryWeights(internalItem.raw.sets) }}</template>
+                    </div>
                     <div v-html="internalItem.raw.notes" class="d-flex text-grey-darken-1" style="white-space: pre-wrap;"></div>
                   </div>
                   <v-icon color="blue" size="x-large" style="position: absolute; right: 20px;">mdi-pencil</v-icon>
